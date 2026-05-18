@@ -1,0 +1,813 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "AI E-Learning API",
+    "description": "Complete API collection for the AI E-Learning platform.\n\n## Base URL\n`http://localhost:5000/api`\n\n## Authentication\nMost endpoints require a Bearer token. After registering or logging in, copy the `token` from the response and set it in the `authToken` collection variable.\n\n## Roles\n- **admin** – Full access\n- **teacher** – Can upload PDFs, generate AI content, delete own content\n- **student** – Can view content, submit quizzes, view own results",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "contentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "quizId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Check if the API server is running.\n\n**Access:** Public"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "health"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"AI E-Learning API is running\",\n  \"environment\": \"development\",\n  \"timestamp\": \"2026-04-04T06:00:00.000Z\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Server health check endpoint."
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "    pm.collectionVariables.set('authToken', res.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"student\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Register a new user.\n\n**Access:** Public\n\n**Body Fields:**\n- `name` (string, required) – 2-50 characters\n- `email` (string, required) – Valid email\n- `password` (string, required) – 6-128 characters\n- `role` (string, optional) – `admin`, `teacher`, or `student` (default: `student`)\n\n**Note:** The auth token is automatically saved to the `authToken` collection variable on success."
+          },
+          "response": [
+            {
+              "name": "Success - Student",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"student\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"data\": {\n    \"user\": {\n      \"_id\": \"661234567890abcdef123456\",\n      \"name\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"role\": \"student\",\n      \"createdAt\": \"2026-04-04T06:00:00.000Z\",\n      \"updatedAt\": \"2026-04-04T06:00:00.000Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Error - Email Already Registered",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Email is already registered\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "    pm.collectionVariables.set('authToken', res.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login with email and password.\n\n**Access:** Public\n\n**Body Fields:**\n- `email` (string, required) – Valid email\n- `password` (string, required)\n\n**Note:** The auth token is automatically saved to the `authToken` collection variable on success."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"data\": {\n    \"user\": {\n      \"_id\": \"661234567890abcdef123456\",\n      \"name\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"role\": \"student\",\n      \"createdAt\": \"2026-04-04T06:00:00.000Z\",\n      \"updatedAt\": \"2026-04-04T06:00:00.000Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Error - Invalid Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email or password\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Me (Profile)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Get the currently logged-in user's profile.\n\n**Access:** Private (any authenticated user)"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"_id\": \"661234567890abcdef123456\",\n      \"name\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"role\": \"student\",\n      \"createdAt\": \"2026-04-04T06:00:00.000Z\",\n      \"updatedAt\": \"2026-04-04T06:00:00.000Z\"\n    }\n  }\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Authentication endpoints – Register, Login, and Get Profile."
+    },
+    {
+      "name": "Content",
+      "item": [
+        {
+          "name": "Upload PDF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.contentId) {",
+                  "    pm.collectionVariables.set('contentId', res.data.contentId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "pdf",
+                  "type": "file",
+                  "src": "",
+                  "description": "The PDF file to upload (required)"
+                },
+                {
+                  "key": "title",
+                  "value": "My Document Title",
+                  "type": "text",
+                  "description": "Optional title for the content. Defaults to filename without .pdf extension."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upload/pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "upload",
+                "pdf"
+              ]
+            },
+            "description": "Upload a PDF file and extract its text content.\n\n**Access:** Private (teacher, admin)\n\n**Body (form-data):**\n- `pdf` (file, required) – The PDF file to upload\n- `title` (string, optional) – Custom title; defaults to filename\n\n**Note:** The `contentId` is automatically saved to the collection variable on success."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"PDF uploaded and text extracted successfully\",\n  \"data\": {\n    \"contentId\": \"661234567890abcdef654321\",\n    \"title\": \"My Document Title\",\n    \"textLength\": 5432\n  }\n}"
+            },
+            {
+              "name": "Error - No File",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Please upload a PDF file\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Generate AI Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{contentId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/generate-content",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "generate-content"
+              ]
+            },
+            "description": "Generate AI-powered notes, summary, MCQs, and questions for an uploaded content.\n\n**Access:** Private (teacher who uploaded the content, or admin)\n\n**Body Fields:**\n- `contentId` (string, required) – Valid MongoDB ObjectId of an uploaded content\n\n**Note:** Content can only be processed once. Delete and re-upload to regenerate."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"AI content generated successfully\",\n  \"data\": {\n    \"content\": {\n      \"_id\": \"661234567890abcdef654321\",\n      \"title\": \"My Document Title\",\n      \"uploadedBy\": \"661234567890abcdef123456\",\n      \"originalText\": \"Extracted text from the PDF...\",\n      \"notes\": \"AI generated notes...\",\n      \"summary\": \"AI generated summary...\",\n      \"mcqs\": [\n        {\n          \"question\": \"What is...?\",\n          \"options\": [\"Option A\", \"Option B\", \"Option C\", \"Option D\"],\n          \"correctAnswer\": \"Option A\"\n        }\n      ],\n      \"questions\": [\n        {\n          \"question\": \"Explain...?\",\n          \"type\": \"long\",\n          \"suggestedAnswer\": \"The concept...\"\n        }\n      ],\n      \"isProcessed\": true,\n      \"createdAt\": \"2026-04-04T06:00:00.000Z\",\n      \"updatedAt\": \"2026-04-04T06:05:00.000Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Error - Already Processed",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Content has already been processed. Delete and re-upload to regenerate.\"\n}"
+            },
+            {
+              "name": "Error - Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Content not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Content",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/content?page=1&limit=10&sort=-createdAt&search=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "content"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page (default: 10)"
+                },
+                {
+                  "key": "sort",
+                  "value": "-createdAt",
+                  "description": "Sort field(s). Prefix with - for descending."
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Text search query on title"
+                }
+              ]
+            },
+            "description": "Get all content with pagination, sorting, and search.\n\n**Access:** Private (any authenticated user)\n\n**Query Parameters:**\n- `page` (number, optional) – Page number, default 1\n- `limit` (number, optional) – Results per page, default 10\n- `sort` (string, optional) – Sort field(s), prefix with `-` for descending\n- `search` (string, optional) – Text search on title"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"results\": 2,\n  \"totalDocs\": 15,\n  \"page\": 1,\n  \"limit\": 10,\n  \"totalPages\": 2,\n  \"data\": {\n    \"content\": [\n      {\n        \"_id\": \"661234567890abcdef654321\",\n        \"title\": \"Introduction to Machine Learning\",\n        \"uploadedBy\": {\n          \"_id\": \"661234567890abcdef123456\",\n          \"name\": \"Jane Teacher\",\n          \"email\": \"jane@example.com\",\n          \"role\": \"teacher\"\n        },\n        \"isProcessed\": true,\n        \"createdAt\": \"2026-04-04T06:00:00.000Z\",\n        \"updatedAt\": \"2026-04-04T06:05:00.000Z\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Content By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/content/{{contentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "content",
+                "{{contentId}}"
+              ]
+            },
+            "description": "Get a single content document by its ID, including all generated AI content.\n\n**Access:** Private (any authenticated user)\n\n**Path Parameters:**\n- `id` – MongoDB ObjectId of the content"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"content\": {\n      \"_id\": \"661234567890abcdef654321\",\n      \"title\": \"Introduction to Machine Learning\",\n      \"uploadedBy\": {\n        \"_id\": \"661234567890abcdef123456\",\n        \"name\": \"Jane Teacher\",\n        \"email\": \"jane@example.com\",\n        \"role\": \"teacher\"\n      },\n      \"originalText\": \"Full extracted text...\",\n      \"notes\": \"AI generated study notes...\",\n      \"summary\": \"AI generated summary...\",\n      \"mcqs\": [\n        {\n          \"question\": \"What is supervised learning?\",\n          \"options\": [\"Option A\", \"Option B\", \"Option C\", \"Option D\"],\n          \"correctAnswer\": \"Option A\"\n        }\n      ],\n      \"questions\": [\n        {\n          \"question\": \"Explain the difference between supervised and unsupervised learning.\",\n          \"type\": \"long\",\n          \"suggestedAnswer\": \"Supervised learning uses labeled data...\"\n        }\n      ],\n      \"isProcessed\": true,\n      \"createdAt\": \"2026-04-04T06:00:00.000Z\",\n      \"updatedAt\": \"2026-04-04T06:05:00.000Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Error - Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Content not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Content",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/content/{{contentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "content",
+                "{{contentId}}"
+              ]
+            },
+            "description": "Delete a content document by its ID.\n\n**Access:** Private (teacher who uploaded the content, or admin)\n\n**Path Parameters:**\n- `id` – MongoDB ObjectId of the content to delete"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Content deleted successfully\"\n}"
+            },
+            {
+              "name": "Error - Not Authorized",
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Not authorized to delete this content\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Content management endpoints – Upload PDF, Generate AI Content, List, View, and Delete."
+    },
+    {
+      "name": "Quiz",
+      "item": [
+        {
+          "name": "Submit Quiz",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.quizId) {",
+                  "    pm.collectionVariables.set('quizId', res.data.quizId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"{{contentId}}\",\n  \"answers\": [\n    {\n      \"questionIndex\": 0,\n      \"selectedOption\": \"Option A\"\n    },\n    {\n      \"questionIndex\": 1,\n      \"selectedOption\": \"Option C\"\n    },\n    {\n      \"questionIndex\": 2,\n      \"selectedOption\": \"Option B\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/quiz/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "quiz",
+                "submit"
+              ]
+            },
+            "description": "Submit quiz answers for auto-evaluation against the MCQs of a content document.\n\n**Access:** Private (student only)\n\n**Body Fields:**\n- `contentId` (string, required) – MongoDB ObjectId of the content with MCQs\n- `answers` (array, required, min 1 item) – Array of answer objects:\n  - `questionIndex` (number, required) – Zero-based index of the MCQ\n  - `selectedOption` (string, required) – The selected answer option\n\n**Note:** The `quizId` is automatically saved to the collection variable on success."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Quiz submitted and evaluated successfully\",\n  \"data\": {\n    \"quizId\": \"661234567890abcdef789012\",\n    \"score\": 2,\n    \"totalQuestions\": 3,\n    \"percentage\": 67,\n    \"answers\": [\n      {\n        \"questionIndex\": 0,\n        \"selectedOption\": \"Option A\",\n        \"isCorrect\": true\n      },\n      {\n        \"questionIndex\": 1,\n        \"selectedOption\": \"Option C\",\n        \"isCorrect\": false\n      },\n      {\n        \"questionIndex\": 2,\n        \"selectedOption\": \"Option B\",\n        \"isCorrect\": true\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "Error - No MCQs",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"This content does not have any MCQs to attempt\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Quiz By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/quiz/{{quizId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "quiz",
+                "{{quizId}}"
+              ]
+            },
+            "description": "Get a specific quiz result by its ID.\n\n**Access:** Private (students can only view their own quizzes; teachers/admins can view any)\n\n**Path Parameters:**\n- `id` – MongoDB ObjectId of the quiz"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"quiz\": {\n      \"_id\": \"661234567890abcdef789012\",\n      \"userId\": {\n        \"_id\": \"661234567890abcdef123456\",\n        \"name\": \"John Doe\",\n        \"email\": \"john@example.com\"\n      },\n      \"contentId\": {\n        \"_id\": \"661234567890abcdef654321\",\n        \"title\": \"Introduction to Machine Learning\"\n      },\n      \"answers\": [\n        {\n          \"questionIndex\": 0,\n          \"selectedOption\": \"Option A\",\n          \"isCorrect\": true\n        }\n      ],\n      \"score\": 2,\n      \"totalQuestions\": 3,\n      \"percentage\": 67,\n      \"createdAt\": \"2026-04-04T06:10:00.000Z\",\n      \"updatedAt\": \"2026-04-04T06:10:00.000Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Error - Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Quiz result not found\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Quiz endpoints – Submit and view quiz results."
+    },
+    {
+      "name": "Results",
+      "item": [
+        {
+          "name": "Get All Results",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/results?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "results"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page (default: 10)"
+                }
+              ]
+            },
+            "description": "Get all quiz results with pagination. Role-based filtering is applied automatically.\n\n**Access:** Private\n- **Admin/Teacher** – See all results\n- **Student** – See only their own results\n\n**Query Parameters:**\n- `page` (number, optional) – Page number, default 1\n- `limit` (number, optional) – Results per page, default 10"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"results\": 3,\n  \"totalDocs\": 25,\n  \"page\": 1,\n  \"limit\": 10,\n  \"totalPages\": 3,\n  \"data\": {\n    \"results\": [\n      {\n        \"_id\": \"661234567890abcdef789012\",\n        \"userId\": {\n          \"_id\": \"661234567890abcdef123456\",\n          \"name\": \"John Doe\",\n          \"email\": \"john@example.com\"\n        },\n        \"contentId\": {\n          \"_id\": \"661234567890abcdef654321\",\n          \"title\": \"Introduction to Machine Learning\"\n        },\n        \"score\": 2,\n        \"totalQuestions\": 3,\n        \"percentage\": 67,\n        \"createdAt\": \"2026-04-04T06:10:00.000Z\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Results endpoints – View quiz results with role-based filtering."
+    }
+  ]
+}
